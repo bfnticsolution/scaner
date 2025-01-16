@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner QR Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(120deg, #007bff, #00c6ff);
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        video {
+            display: none;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+            border: 2px solid white;
+            border-radius: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #00c6ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scanner un QR Code</h1>
+    <button id="startScan">Scanner QR Code</button>
+    <video id="cameraFeed"></video>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr"></script>
+    <script>
+        document.getElementById('startScan').addEventListener('click', async () => {
+            const video = document.getElementById('cameraFeed');
+            video.style.display = 'block';
+
+            try {
+                // Forcer l'ouverture de la caméra arrière
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" },
+                    audio: false
+                });
+
+                // Afficher le flux vidéo
+                video.srcObject = stream;
+                video.play();
+
+                // Scanner le QR Code
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                video.addEventListener('play', () => {
+                    const scanInterval = setInterval(() => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+                        if (code) {
+                            clearInterval(scanInterval);
+                            stream.getTracks().forEach(track => track.stop());
+                            video.style.display = 'none';
+
+                            alert(`QR Code détecté : ${code.data}`);
+                            window.location.href = code.data; // Lancer un appel ou redirection
+                        }
+                    }, 500);
+                });
+            } catch (err) {
+                alert('Erreur : Impossible d’accéder à la caméra.');
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
