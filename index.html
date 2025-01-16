@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Paiement USSD</title>
+    <style>
+        /* Global Style */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(120deg, #007bff, #00c6ff);
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        label, input, select {
+            display: block;
+            margin: 10px auto;
+            width: 90%;
+            max-width: 400px;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: box-shadow 0.3s ease;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            box-shadow: 0 0 10px #00c6ff;
+        }
+        button {
+            background: #00c6ff;
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        button:hover {
+            background: #007bff;
+            transform: scale(1.1);
+        }
+        #qrcode, #scanner {
+            margin: 20px auto;
+            display: none;
+        }
+        .actions {
+            margin-top: 20px;
+        }
+        .actions button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Paycode USSD</h1>
+    <p class="info">Renseignez les informations ci-dessous pour générer un QR code de paiement ou scanner un QR code pour effectuer un appel téléphonique.</p>
+    
+    <!-- Formulaire -->
+    <label for="telephone">Numéro de téléphone (Orange/Moov Money) :</label>
+    <input type="text" id="telephone" placeholder="70123456" />
+
+    <label for="montant">Montant :</label>
+    <input type="number" id="montant" placeholder="Ex : 5000" />
+
+    <label for="operateur">Opérateur :</label>
+    <select id="operateur">
+        <option value="*144*2*1*">Orange Money</option>
+        <option value="*555*2*1*">Moov Money</option>
+    </select>
+
+    <div class="actions">
+        <button onclick="generateQRCode()">Générer le QR Code</button>
+        <button onclick="resetForm()">Réinitialiser</button>
+        <button onclick="activateScanner()">Me payer</button>
+    </div>
+
+    <!-- Conteneur du QR Code -->
+    <div id="qrcode"></div>
+
+    <!-- Scanner -->
+    <video id="scanner" width="300" height="300"></video>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+    <script>
+        function generateQRCode() {
+            const telephone = document.getElementById("telephone").value.trim();
+            const montant = document.getElementById("montant").value.trim();
+            const operateur = document.getElementById("operateur").value;
+            const qrcodeContainer = document.getElementById("qrcode");
+
+            if (!telephone || !/^\d+$/.test(telephone)) {
+                alert("Veuillez entrer un numéro de téléphone valide.");
+                return;
+            }
+            if (!montant || isNaN(montant) || montant <= 0) {
+                alert("Veuillez entrer un montant valide.");
+                return;
+            }
+
+            const ussdCode = `tel:${operateur}${telephone}*${montant}#`;
+
+            qrcodeContainer.innerHTML = ""; // Réinitialiser
+            new QRCode(qrcodeContainer, {
+                text: ussdCode,
+                width: 200,
+                height: 200
+            });
+            qrcodeContainer.style.display = "block";
+        }
+
+        function resetForm() {
+            document.getElementById("telephone").value = "";
+            document.getElementById("montant").value = "";
+            document.getElementById("operateur").value = "*144*2*1*";
+            document.getElementById("qrcode").style.display = "none";
+        }
+
+        async function activateScanner() {
+    const video = document.getElementById("scanner");
+    const qrcodeContainer = document.getElementById("qrcode");
+    
+    // S'assurer que le conteneur vidéo est visible
+    video.style.display = "block";
+    qrcodeContainer.style.display = "none"; // Masquer le QR Code généré
+
+    try {
+        // Demander l'accès à la caméra arrière
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        });
+        video.srcObject = stream;
+        video.play();
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Lire la vidéo et scanner
+        video.addEventListener("play", () => {
+            const scan = setInterval(() => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+                if (code) {
+                    clearInterval(scan); // Arrêter le scan
+                    stream.getTracks().forEach(track => track.stop()); // Arrêter la caméra
+                    video.style.display = "none"; // Masquer la vidéo
+
+                    alert(`QR Code détecté : ${code.data}`);
+                    window.location.href = code.data; // Lancer l'appel
+                }
+            }, 500);
+        });
+    } catch (error) {
+        console.error("Erreur d'accès à la caméra :", error);
+        alert("Impossible d'accéder à la caméra. Vérifiez les permissions.");
+    }
+}
+
+    </script>
+</body>
+</html>
