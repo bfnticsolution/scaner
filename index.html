@@ -63,7 +63,7 @@
     </style>
 </head>
 <body>
-    <h1>Paycode USSD</h1>
+    <h1>Paycode USS</h1>
     <p class="info">Renseignez les informations ci-dessous pour générer un QR code de paiement ou scanner un QR code pour effectuer un appel téléphonique.</p>
     
     <!-- Formulaire -->
@@ -128,50 +128,33 @@
         }
 
         async function activateScanner() {
-    const video = document.getElementById("scanner");
-    const qrcodeContainer = document.getElementById("qrcode");
-    
-    // S'assurer que le conteneur vidéo est visible
-    video.style.display = "block";
-    qrcodeContainer.style.display = "none"; // Masquer le QR Code généré
+            const video = document.getElementById("scanner");
+            video.style.display = "block";
 
-    try {
-        // Demander l'accès à la caméra arrière
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" }
-        });
-        video.srcObject = stream;
-        video.play();
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream;
+            video.play();
 
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
 
-        // Lire la vidéo et scanner
-        video.addEventListener("play", () => {
-            const scan = setInterval(() => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            video.addEventListener("play", () => {
+                const scan = setInterval(() => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, canvas.width, canvas.height);
 
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, canvas.width, canvas.height);
-
-                if (code) {
-                    clearInterval(scan); // Arrêter le scan
-                    stream.getTracks().forEach(track => track.stop()); // Arrêter la caméra
-                    video.style.display = "none"; // Masquer la vidéo
-
-                    alert(`QR Code détecté : ${code.data}`);
-                    window.location.href = code.data; // Lancer l'appel
-                }
-            }, 500);
-        });
-    } catch (error) {
-        console.error("Erreur d'accès à la caméra :", error);
-        alert("Impossible d'accéder à la caméra. Vérifiez les permissions.");
-    }
-}
-
+                    if (code) {
+                        clearInterval(scan);
+                        stream.getTracks().forEach(track => track.stop());
+                        video.style.display = "none";
+                        window.location.href = code.data; // Lancer l'appel
+                    }
+                }, 300);
+            });
+        }
     </script>
 </body>
 </html>
