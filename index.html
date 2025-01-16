@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>QR Code Paiement USSD</title>
     <style>
         /* Global Style */
@@ -14,6 +16,7 @@
             margin: 0;
             padding: 20px;
         }
+
         h1 {
             margin-bottom: 20px;
             font-size: 2.5rem;
@@ -130,9 +133,98 @@
 
         function redirectToPayment() {
     // Remplacez l'URL ci-dessous par l'adresse de la page cible
-    window.location.href = "scanner.html";
+    window.location.href = "/scanner.html";
 }
 
     </script>
+    <script>
+      function generateQRCode() {
+          const telephone = document.getElementById("telephone").value.trim();
+          const montant = document.getElementById("montant").value.trim();
+          const operateur = document.getElementById("operateur").value;
+          const qrcodeContainer = document.getElementById("qrcode");
+  
+          if (!telephone || !/^\d+$/.test(telephone)) {
+              Swal.fire({
+                  icon: 'warning',
+                  title: 'Numéro invalide',
+                  text: 'Veuillez entrer un numéro de téléphone valide.',
+                  confirmButtonColor: '#007bff',
+              });
+              return;
+          }
+          if (!montant || isNaN(montant) || montant <= 0) {
+              Swal.fire({
+                  icon: 'error',
+                  title: 'Montant invalide',
+                  text: 'Veuillez entrer un montant supérieur à 0.',
+                  confirmButtonColor: '#007bff',
+              });
+              return;
+          }
+  
+          const ussdCode = `tel:${operateur}${telephone}*${montant}#`;
+  
+          qrcodeContainer.innerHTML = ""; // Réinitialiser
+          new QRCode(qrcodeContainer, {
+              text: ussdCode,
+              width: 200,
+              height: 200
+          });
+          qrcodeContainer.style.display = "block";
+  
+          Swal.fire({
+              icon: 'success',
+              title: 'QR Code généré',
+              text: 'Votre QR Code a été généré avec succès. Scannez-le pour effectuer le paiement.',
+              confirmButtonColor: '#007bff',
+          });
+      }
+  
+      function resetForm() {
+          document.getElementById("telephone").value = "";
+          document.getElementById("montant").value = "";
+          document.getElementById("operateur").value = "*144*2*1*";
+          document.getElementById("qrcode").style.display = "none";
+  
+          Swal.fire({
+              icon: 'info',
+              title: 'Formulaire réinitialisé',
+              text: 'Tous les champs ont été effacés.',
+              confirmButtonColor: '#007bff',
+          });
+      }
+  
+      function redirectToPayment() {
+          const telephone = document.getElementById("telephone").value.trim();
+          const montant = document.getElementById("montant").value.trim();
+  
+          if (!telephone || !montant) {
+              Swal.fire({
+                  icon: 'warning',
+                  title: 'Données manquantes',
+                  text: 'Veuillez remplir tous les champs avant de procéder.',
+                  confirmButtonColor: '#007bff',
+              });
+              return;
+          }
+  
+          Swal.fire({
+              icon: 'question',
+              title: 'Confirmation',
+              text: 'Voulez-vous être redirigé vers la page de paiement ?',
+              showCancelButton: true,
+              confirmButtonColor: '#007bff',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Oui, continuer',
+              cancelButtonText: 'Annuler',
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  window.location.href = `scanner.html`;
+              }
+          });
+      }
+  </script>
+  
 </body>
 </html>
