@@ -194,36 +194,6 @@
               confirmButtonColor: '#007bff',
           });
       }
-  
-      function redirectToPayment() {
-          const telephone = document.getElementById("telephone").value.trim();
-          const montant = document.getElementById("montant").value.trim();
-  
-          if (!telephone || !montant) {
-              Swal.fire({
-                  icon: 'warning',
-                  title: 'Données manquantes',
-                  text: 'Veuillez remplir tous les champs avant de procéder.',
-                  confirmButtonColor: '#007bff',
-              });
-              return;
-          }
-  
-          Swal.fire({
-              icon: 'question',
-              title: 'Confirmation',
-              text: 'Voulez-vous être redirigé vers la page de paiement ?',
-              showCancelButton: true,
-              confirmButtonColor: '#007bff',
-              cancelButtonColor: '#d33',
-              confirmButtonText: 'Oui, continuer',
-              cancelButtonText: 'Annuler',
-          }).then((result) => {
-              if (result.isConfirmed) {
-                  window.location.href = `scanner.html`;
-              }
-          });
-      }
   </script>
   
 </body>
