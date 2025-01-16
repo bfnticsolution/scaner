@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scanner QR Code</title>
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -39,12 +37,16 @@
             background: #007bff;
         }
     </style>
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 <body>
     <h1>Scanner un QR Code</h1>
     <button id="startScan">Scanner QR Code</button>
     <video id="cameraFeed"></video>
 
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr"></script>
     <script>
         document.getElementById('startScan').addEventListener('click', async () => {
@@ -80,13 +82,27 @@
                             stream.getTracks().forEach(track => track.stop());
                             video.style.display = 'none';
 
-                            alert(`QR Code détecté : ${code.data}`);
-                            window.location.href = code.data; // Lancer un appel ou redirection
+                            // Afficher le QR Code détecté avec SweetAlert2
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Code de Paiement',
+                                text: `${code.data}`,
+                                confirmButtonText: 'Payer',
+                                
+                            }).then(() => {
+                                window.location.href = code.data; // Redirection
+                            });
                         }
                     }, 500);
                 });
             } catch (err) {
-                alert('Erreur : Impossible d’accéder à la caméra.');
+                // Afficher une erreur avec SweetAlert2
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: 'Impossible d’accéder à la caméra.',
+                    
+                });
                 console.error(err);
             }
         });
