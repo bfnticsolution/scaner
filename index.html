@@ -156,29 +156,34 @@
         }
 
         #history {
-            margin-top: 20px;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
+    margin-top: 20px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    height: 100px; /* Hauteur fixe pour activer le scroll */
+    overflow-y: auto; /* Active le défilement vertical */
+    color: #070101;
+}
 
-        #history ul {
-            list-style-type: none;
-            padding: 0;
-        }
+#history ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0; /* Éliminer les marges pour éviter tout espacement supplémentaire */
+}
 
-        #history li {
-            padding: 10px;
-            background: #007bff;
-            color: #fff;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
+#history li {
+    padding: 10px;
+    background: #007bff;
+    color: #fff;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
         #modal {
             display: none;
             position: fixed;
@@ -226,10 +231,10 @@
     <h1>Paycode USSD</h1>
     
     <div class="container">
-        <label for="telephone">Numéro receveur :</label>
+        <label for="telephone">Numéro du receveur :</label>
         <input type="text" id="telephone" placeholder="70123456" />
 
-        <label for="montant">Montant (XOF) :</label>
+        <label for="montant">Montant (XOF) à recevoir :</label>
         <input type="number" id="montant" placeholder="Ex : 5000" />
 
         <label>Opérateur :</label>
@@ -269,14 +274,15 @@
             <div id="modal-content">
                 <button class="close" onclick="closeModal()">×</button>
                 <h2>Code de Paiement</h2>
-                <div id="qrcode"></div>
+<center><div id="qrcode"></div>
+                <h2>Scanner pour payer</h2>
             </div>
         </div>
 
-        <div id="history">
-            <h2>Historique</h2>
-            <ul id="transaction-list"></ul>
-        </div>
+    </div>
+    <div id="history">
+       <center> <h2>Historique</h2>
+        <ul id="transaction-list"></ul>
     </div>
 
     <div id="toast" class="toast"></div>
@@ -327,17 +333,17 @@ function generateQRCode() {
 
     // Validation des champs
     if (!/^\d+$/.test(telephone)) {
-        showToast("Numéro de téléphone invalide.", true);
+        showToast("Le numéro de téléphone est invalide.", true);
         return;
     }
 
     if (!montant || isNaN(montant) || montant <= 0) {
-        showToast("Montant invalide.", true);
+        showToast("Le montant est invalide.", true);
         return;
     }
 
     if (!operateur) {
-        showToast("Veuillez sélectionner un opérateur.", true);
+        showToast("Veuillez sélectionner l'opérateur.", true);
         return;
     }
 
@@ -354,7 +360,7 @@ function generateQRCode() {
     addTransactionToHistory(telephone, montant);
 
     // Afficher un message de confirmation
-    showToast("QR Code généré avec succès.");
+    showToast("Code de paiement généré avec succès.");
 }
 
 // Fonction pour ajouter une transaction à l'historique
