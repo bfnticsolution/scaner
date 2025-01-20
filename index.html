@@ -3,198 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>QR Code Paiement USSD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Global Style */
+        /* Global Styles */
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(120deg, #007bff, #00c6ff);
             color: #fff;
-            text-align: center;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
 
         h1 {
             margin-bottom: 20px;
             font-size: 2.5rem;
+            color: #fdfdfd;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
         }
-        label, input, select {
-            display: block;
-            margin: 10px auto;
+
+        .container {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             width: 90%;
-            max-width: 400px;
+            max-width: 320px;
+            text-align: center;
+            color: #333;
         }
-        input[type="text"], input[type="number"], select {
-            padding: 12px;
-            border: 1px solid #ccc;
+
+        label {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
-            outline: none;
+            font-size: 1rem;
             transition: box-shadow 0.3s ease;
         }
-        input[type="text"]:focus, input[type="number"]:focus, select:focus {
-            box-shadow: 0 0 10px #00c6ff;
+
+        input:focus {
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.8);
+            outline: none;
         }
+
+        .custom-select {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .select-selected {
+            background-color: #f5f5f5;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .select-selected i {
+            margin-left: 10px;
+        }
+        .select-selected img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        .select-items {
+            position: absolute;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 5px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .select-items div {
+            padding: 10px 15px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .select-items div img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .select-items div:hover {
+            background: #007bff;
+            color: #fff;
+        }
+
         button {
-            background: #00c6ff;
+            background: linear-gradient(45deg, #007bff, #00c6ff);
             color: #fff;
             border: none;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-size: 16px;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-block;
+            width: 100%;
+            margin-top: 10px;
         }
+
         button:hover {
-            background: #007bff;
-            transform: scale(1.1);
+            background: linear-gradient(45deg, #0056b3, #007bff);
         }
-        #qrcode, #scanner {
-            margin: 20px auto;
+
+        #qrcode {
+            margin-top: 20px;
             display: none;
         }
-        .actions {
-            margin-top: 20px;
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: none;
         }
-        .actions button {
-            margin: 5px;
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        #history {
+            margin-top: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        #history ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #history li {
+            padding: 10px;
+            background: #007bff;
+            color: #fff;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modal-content {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            position: relative;
+        }
+
+        #modal-content h2 {
+            margin: 0 0 20px;
+            color: #333;
+        }
+
+        #modal-content .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        #qrcode {
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
     <h1>Paycode USSD</h1>
-    <p class="info">Renseignez les informations ci-dessous pour générer un QR code de paiement ou scanner un QR code pour effectuer un appel téléphonique.</p>
     
-    <!-- Formulaire -->
-    <label for="telephone">Numéro de téléphone (Orange/Moov Money) :</label>
-    <input type="text" id="telephone" placeholder="70123456" />
+    <div class="container">
+        <label for="telephone">Numéro receveur :</label>
+        <input type="text" id="telephone" placeholder="70123456" />
 
-    <label for="montant">Montant :</label>
-    <input type="number" id="montant" placeholder="Ex : 5000" />
+        <label for="montant">Montant (XOF) :</label>
+        <input type="number" id="montant" placeholder="Ex : 5000" />
 
-    <label for="operateur">Opérateur :</label>
-    <select id="operateur">
-        <option value="*144*2*1*">Orange Money</option>
-        <option value="*555*2*1*">Moov Money</option>
-    </select>
+        <label>Opérateur :</label>
+        <div class="custom-select">
+            <div class="select-selected">
+                Sélectionnez l'opérateur <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="select-items">
+                <div data-value="*144*2*1*">
+                    <img src="https://seeklogo.com/images/O/orange-money-logo-8F2AED308D-seeklogo.com.png" alt="Orange"> Orange Money
+                </div>
+                <div data-value="*555*2*1*">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfc4gHsakgFMod4ogYJNgXEJ_B3L_MY60o5A&s" alt="Moov"> Moov Money
+                </div>
+                <div data-value="*808*2*1*1*">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSng2kBSnI3QGSQF4Z5vOOtQKmd3AmYvi9jaA&s" alt="Telecel"> Telecel Money
+                </div>
+                <div data-value="*3518*1*1*">
+                    <img src="https://sankfinance.com/appstore.png" alt="SANK"> SANK Money
+                </div>
+                <div data-value="*3416*2*">
+                    <img src="https://is2-ssl.mzstatic.com/image/thumb/Purple125/v4/ab/a0/95/aba095c7-deef-8ae5-2f77-e05529720726/source/256x256bb.jpg" alt="Coris"> Coris Money
+                </div>
+            </div>
+        </div>
 
-    <div class="actions">
-        <button onclick="generateQRCode()">Générer le QR Code</button>
-        <button onclick="resetForm()">Réinitialiser</button>
-        <button onclick="redirectToPayment()">Me payer</button>
+        <button onclick="generateQRCode()">
+            <i class="fas fa-qrcode"></i> Générer le QR Code
+        </button>
+        
+        <button onclick="window.location.href='Scanner.html'">
+            <i class="fas fa-camera"></i> Scanner un Code
+        </button>
+        
 
+        <div id="modal">
+            <div id="modal-content">
+                <button class="close" onclick="closeModal()">×</button>
+                <h2>Code de Paiement</h2>
+                <div id="qrcode"></div>
+            </div>
+        </div>
+
+        <div id="history">
+            <h2>Historique</h2>
+            <ul id="transaction-list"></ul>
+        </div>
     </div>
 
-    <!-- Conteneur du QR Code -->
-    <div id="qrcode"></div>
-
-    <!-- Scanner -->
-    <video id="scanner" width="300" height="300"></video>
+    <div id="toast" class="toast"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
     <script>
-        function generateQRCode() {
-            const telephone = document.getElementById("telephone").value.trim();
-            const montant = document.getElementById("montant").value.trim();
-            const operateur = document.getElementById("operateur").value;
-            const qrcodeContainer = document.getElementById("qrcode");
+      // Sélection des éléments du DOM
+const customSelect = document.querySelector('.custom-select');
+const selected = customSelect.querySelector('.select-selected');
+const items = customSelect.querySelector('.select-items');
+const history = document.getElementById("transaction-list");
+const modal = document.getElementById("modal");
+const toast = document.getElementById("toast");
+const qrcodeContainer = document.getElementById("qrcode");
 
-            if (!telephone || !/^\d+$/.test(telephone)) {
-                alert("Veuillez entrer un numéro de téléphone valide.");
-                return;
-            }
-            if (!montant || isNaN(montant) || montant <= 0) {
-                alert("Veuillez entrer un montant valide.");
-                return;
-            }
+// Gestion de l'affichage du menu déroulant
+selected.addEventListener('click', () => {
+    items.style.display = items.style.display === 'block' ? 'none' : 'block';
+});
 
-            const ussdCode = `tel:${operateur}${telephone}*${montant}#`;
+items.addEventListener('click', (e) => {
+    const option = e.target.closest('div');
+    if (option) {
+        selected.innerHTML = `${option.innerHTML} <i class="fas fa-chevron-down"></i>`;
+        selected.setAttribute('data-value', option.getAttribute('data-value'));
+        items.style.display = 'none';
+    }
+});
 
-            qrcodeContainer.innerHTML = ""; // Réinitialiser
-            new QRCode(qrcodeContainer, {
-                text: ussdCode,
-                width: 200,
-                height: 200
-            });
-            qrcodeContainer.style.display = "block";
-        }
+// Fermer le menu déroulant lorsqu'on clique à l'extérieur
+document.addEventListener('click', (e) => {
+    if (!customSelect.contains(e.target)) items.style.display = 'none';
+});
 
-        function resetForm() {
-            document.getElementById("telephone").value = "";
-            document.getElementById("montant").value = "";
-            document.getElementById("operateur").value = "*144*2*1*";
-            document.getElementById("qrcode").style.display = "none";
-        }
+// Fonction pour afficher un toast
+function showToast(message, isError = false) {
+    toast.textContent = message;
+    toast.classList.toggle("error", isError);
+    toast.style.display = "block";
+    setTimeout(() => (toast.style.display = "none"), 3000);
+}
 
-        function redirectToPayment() {
-    // Remplacez l'URL ci-dessous par l'adresse de la page cible
-    window.location.href = "scanner.html";
+// Fonction pour générer le QR Code
+function generateQRCode() {
+    const telephone = document.getElementById("telephone").value.trim();
+    const montant = document.getElementById("montant").value.trim();
+    const operateur = selected.getAttribute('data-value');
+
+    // Validation des champs
+    if (!/^\d+$/.test(telephone)) {
+        showToast("Numéro de téléphone invalide.", true);
+        return;
+    }
+
+    if (!montant || isNaN(montant) || montant <= 0) {
+        showToast("Montant invalide.", true);
+        return;
+    }
+
+    if (!operateur) {
+        showToast("Veuillez sélectionner un opérateur.", true);
+        return;
+    }
+
+    // Génération du code USSD
+    const ussdCode = `tel:${operateur}${telephone}*${montant}#`;
+    qrcodeContainer.innerHTML = ""; // Réinitialiser le QR Code
+    new QRCode(qrcodeContainer, { text: ussdCode, width: 200, height: 200 });
+    qrcodeContainer.style.display = "block";
+
+    // Afficher la modale
+    modal.style.display = "flex";
+
+    // Ajouter l'entrée à l'historique des transactions
+    addTransactionToHistory(telephone, montant);
+
+    // Afficher un message de confirmation
+    showToast("QR Code généré avec succès.");
+}
+
+// Fonction pour ajouter une transaction à l'historique
+function addTransactionToHistory(telephone, montant) {
+    const entry = document.createElement("li");
+    entry.innerHTML = `<span>${telephone}</span><span>${montant} XOF</span>`;
+    history.appendChild(entry);
+}
+
+// Fonction pour fermer la modale
+function closeModal() {
+    modal.style.display = "none";
 }
 
     </script>
-    <script>
-      function generateQRCode() {
-          const telephone = document.getElementById("telephone").value.trim();
-          const montant = document.getElementById("montant").value.trim();
-          const operateur = document.getElementById("operateur").value;
-          const qrcodeContainer = document.getElementById("qrcode");
-  
-          if (!telephone || !/^\d+$/.test(telephone)) {
-              Swal.fire({
-                  icon: 'warning',
-                  title: 'Numéro invalide',
-                  text: 'Veuillez entrer un numéro de téléphone valide.',
-                  confirmButtonColor: '#007bff',
-              });
-              return;
-          }
-          if (!montant || isNaN(montant) || montant <= 0) {
-              Swal.fire({
-                  icon: 'error',
-                  title: 'Montant invalide',
-                  text: 'Veuillez entrer un montant supérieur à 0.',
-                  confirmButtonColor: '#007bff',
-              });
-              return;
-          }
-  
-          const ussdCode = `tel:${operateur}${telephone}*${montant}#`;
-  
-          qrcodeContainer.innerHTML = ""; // Réinitialiser
-          new QRCode(qrcodeContainer, {
-              text: ussdCode,
-              width: 200,
-              height: 200
-          });
-          qrcodeContainer.style.display = "block";
-  
-          Swal.fire({
-              icon: 'success',
-              title: 'QR Code généré',
-              text: 'Votre QR Code a été généré avec succès. Scannez-le pour effectuer le paiement.',
-              confirmButtonColor: '#007bff',
-          });
-      }
-  
-      function resetForm() {
-          document.getElementById("telephone").value = "";
-          document.getElementById("montant").value = "";
-          document.getElementById("operateur").value = "*144*2*1*";
-          document.getElementById("qrcode").style.display = "none";
-  
-          Swal.fire({
-              icon: 'info',
-              title: 'Formulaire réinitialisé',
-              text: 'Tous les champs ont été effacés.',
-              confirmButtonColor: '#007bff',
-          });
-      }
-  </script>
-  
 </body>
 </html>
