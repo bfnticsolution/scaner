@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pcode</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,6 +17,7 @@
         }
         h1 {
             margin-bottom: 20px;
+            font-size: 2rem;
         }
         video {
             display: none;
@@ -24,18 +27,6 @@
             border: 2px solid white;
             border-radius: 10px;
         }
-        button {
-            padding: 10px 20px;
-            background: #00c6ff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        button:hover {
-            background: #007bff;
-        }
         #logo {
     width: 100px; /* Taille de l'image */
     height: 100px; /* Assurez-vous que la hauteur et la largeur soient égales */
@@ -43,8 +34,46 @@
     border: 3px solid #007bff; /* Bordure autour de l'image */
     margin-bottom: 10px; /* Espacement entre le logo et le titre */
     box-shadow: 0 4px 18px #030202(0, 0, 0, 1.2); /* Effet d'ombre pour un rendu esthétique */
-}
+    animation: glow 2s infinite ease-in-out; /* Animation */
+    }
+
+    @keyframes glow {
+        0% {
+            box-shadow: 0 0 10px #00f, 0 0 20px #00f, 0 0 30px #00f;
+        }
+        50% {
+            box-shadow: 0 0 20px #0ff, 0 0 30px #0ff, 0 0 50px #0ff;
+        }
+        100% {
+            box-shadow: 0 0 10px #00f, 0 0 20px #00f, 0 0 30px #00f;
+        }
+    }
+
+    #startScan {
+        background-color: #01621e; /* Couleur du bouton */
+        color: #fff; /* Couleur du texte et de l'icône */
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px; /* Espacement entre l'icône et le texte */
+        cursor: pointer;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease;
+    }
+
+    #startScan i {
+        font-size: 20px; /* Taille de l'icône */
+    }
+
+    #startScan:hover {
+        background-color: #0056b3; /* Couleur au survol */
+    }
     </style>
+    
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
@@ -53,71 +82,120 @@
         <img src="https://www2.0zz0.com/2025/01/21/08/294968098.png" alt="Logo de PCode" id="logo" />
     </header>
 
-    <h1>Scanner Pcode</h1>
-    <button id="startScan">Scanner Maintenant</button>
+    <h1>PCode Scanner</h1>
     <video id="cameraFeed"></video>
-
+    <br>
+   <center><button id="startScan">
+        <i class="fas fa-camera"></i> Scanner Maintenant
+    </button>
+    <br>
+    
+    <h2>Historique des Scans</h2>
+    <ul id="scanHistory" style="list-style: none; padding: 0; text-align: left; max-width: 400px; margin: 0 auto;"></ul>
+    <button id="clearHistory" style="background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+        Effacer l'historique
+    </button>
+    
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr"></script>
     <script>
-        document.getElementById('startScan').addEventListener('click', async () => {
-            const video = document.getElementById('cameraFeed');
-            video.style.display = 'block';
+       // Fonction pour récupérer l'historique depuis le LocalStorage
+function getScanHistory() {
+    return JSON.parse(localStorage.getItem('scanHistory')) || [];
+}
 
-            try {
-                // Forcer l'ouverture de la caméra arrière
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" },
-                    audio: false
-                });
+// Fonction pour sauvegarder l'historique dans le LocalStorage
+function saveScanHistory(data) {
+    const history = getScanHistory();
+    history.unshift(data); // Ajouter au début de la liste
+    localStorage.setItem('scanHistory', JSON.stringify(history));
+}
 
-                // Afficher le flux vidéo
-                video.srcObject = stream;
-                video.play();
+// Fonction pour afficher l'historique
+function displayScanHistory() {
+    const history = getScanHistory();
+    const historyList = document.getElementById('scanHistory');
+    historyList.innerHTML = ''; // Réinitialiser la liste
+    history.forEach((item, index) => {
+        const listItem = document.createElement('li');
+        listItem.style.padding = '10px 0';
+        listItem.innerHTML = `
+            <span style="font-size: 14px; color: #ddd;">#${index + 1}</span>
+            <a href="${item}" target="_blank" style="text-decoration: none; color: #fff;">${item}</a>
+        `;
+        historyList.appendChild(listItem);
+    });
+}
 
-                // Scanner le QR Code
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
+// Appeler la fonction d'affichage au chargement de la page
+displayScanHistory();
 
-                video.addEventListener('play', () => {
-                    const scanInterval = setInterval(() => {
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
+// Modifier la fonction de scan pour inclure l'enregistrement dans l'historique
+document.getElementById('startScan').addEventListener('click', async () => {
+    const video = document.getElementById('cameraFeed');
+    video.style.display = 'block';
 
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                        const code = jsQR(imageData.data, canvas.width, canvas.height);
-
-                        if (code) {
-                            clearInterval(scanInterval);
-                            stream.getTracks().forEach(track => track.stop());
-                            video.style.display = 'none';
-
-                            // Afficher le QR Code détecté avec SweetAlert2
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Code de Paiement',
-                                text: `${code.data}`,
-                                confirmButtonText: 'Payer',
-                                
-                            }).then(() => {
-                                window.location.href = code.data; // Redirection
-                            });
-                        }
-                    }, 500);
-                });
-            } catch (err) {
-                // Afficher une erreur avec SweetAlert2
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erreur',
-                    text: 'Impossible d’accéder à la caméra.',
-                    
-                });
-                console.error(err);
-            }
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+            audio: false
         });
+
+        video.srcObject = stream;
+        video.play();
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        video.addEventListener('play', () => {
+            const scanInterval = setInterval(() => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+                if (code) {
+                    clearInterval(scanInterval);
+                    stream.getTracks().forEach(track => track.stop());
+                    video.style.display = 'none';
+
+                    // Sauvegarder dans l'historique
+                    saveScanHistory(code.data);
+                    displayScanHistory();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Code de Paiement',
+                        text: `${code.data}`,
+                        confirmButtonText: 'Payer',
+                    }).then(() => {
+                        window.location.href = code.data; // Redirection
+                    });
+                }
+            }, 500);
+        });
+    } catch (err) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Erreur',
+            text: 'Impossible d’accéder à la caméra.',
+        });
+        console.error(err);
+    }
+});
+document.getElementById('clearHistory').addEventListener('click', () => {
+    localStorage.removeItem('scanHistory'); // Effacer l'historique
+    displayScanHistory(); // Mettre à jour l'affichage
+    Swal.fire({
+        icon: 'success',
+        title: 'Historique effacé',
+        text: 'L’historique des scans a été supprimé.',
+    });
+});
+
     </script>
 </body>
 </html>
