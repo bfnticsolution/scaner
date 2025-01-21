@@ -205,24 +205,26 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #050709(0, 0, 0, 0.7);
-            z-index: 1000;
+            background: #050709a8;
+            z-index: 2000;
             justify-content: center;
             align-items: center;
         }
 
         #modal-content {
-            background: #fff;
+            background: #f9fafa;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             text-align: center;
             position: relative;
+            position: fixed;
+            z-index: 2000;
         }
 
         #modal-content h2 {
             margin: 0 0 20px;
-            color: #007bff;
+            color: #097ef4;
         }
 
         #modal-content .close {
@@ -233,7 +235,7 @@
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
-            color: #666;
+            color: #e10202;
         }
 
         #qrcode {
@@ -246,7 +248,21 @@
     border: 3px solid #007bff; /* Bordure autour de l'image */
     margin-bottom: 10px; /* Espacement entre le logo et le titre */
     box-shadow: 0 4px 18px #030202(0, 0, 0, 1.2); /* Effet d'ombre pour un rendu esthétique */
-}
+    animation: glow 2s infinite ease-in-out; /* Animation */
+    }
+
+    @keyframes glow {
+        0% {
+            box-shadow: 0 0 10px #00f, 0 0 20px #00f, 0 0 30px #00f;
+        }
+        50% {
+            box-shadow: 0 0 20px #0ff, 0 0 30px #0ff, 0 0 50px #0ff;
+        }
+        100% {
+            box-shadow: 0 0 10px #00f, 0 0 20px #00f, 0 0 30px #00f;
+        }
+    }
+    
 input {
     width: 100%;
     padding: 10px 15px;
@@ -266,6 +282,26 @@ input {
     color: #007bff;
     font-size: 1.2rem;
     pointer-events: none; /* Empêche l'interaction avec l'icône */
+}
+#confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+#confirm-modal-content {
+    background: #097ef4;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 
@@ -327,17 +363,25 @@ input {
                 <h2>Code de Paiement</h2>
 <center><div id="qrcode"></div>
                 <h2>Scanner pour payer</h2>
+                <button onclick="shareQRCode()"><i class="fas fa-share"></i> Partager le QR Code</button>
             </div>
         </div>
-
     </div>
     <div id="history">
        <center> <h2>Historique</h2>
         <ul id="transaction-list"></ul>
+        <button onclick="clearHistory()" style="margin-top: 10px; background-color: #dc3545;">Effacer l'historique</button>
     </div>
-
     <div id="toast" class="toast"></div>
 
+    <div id="confirm-modal" style="display: none;">
+        <div id="confirm-modal-content">
+            <p>Êtes-vous sûr de vouloir effacer l'historique ?</p>
+            <button id="confirm-yes" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Oui</button>
+            <button id="confirm-no" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-left: 10px;">Non</button>
+        </div>
+    </div>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
       // Sélection des éléments du DOM
@@ -421,11 +465,81 @@ function addTransactionToHistory(telephone, montant) {
     history.appendChild(entry);
 }
 
+    updateHistory(); // Chargement initial
 // Fonction pour fermer la modale
 function closeModal() {
     modal.style.display = "none";
 }
 
+// Sauvegarde de l'historique dans LocalStorage
+function saveHistory() {
+    const transactions = [...document.querySelectorAll("#transaction-list li")].map((li) => ({
+        telephone: li.querySelector("span:nth-child(1)").textContent,
+        montant: li.querySelector("span:nth-child(2)").textContent,
+    }));
+    localStorage.setItem("transactionHistory", JSON.stringify(transactions));
+}
+
+// Chargement de l'historique depuis LocalStorage
+function updateHistory() {
+    const savedTransactions = JSON.parse(localStorage.getItem("transactionHistory")) || [];
+    history.innerHTML = "";
+    savedTransactions.forEach(({ telephone, montant }) => {
+        const entry = document.createElement("li");
+        entry.innerHTML = `<span>${telephone}</span><span>${montant}</span>`;
+        history.appendChild(entry);
+    });
+}
+
+function clearHistory() {
+    const confirmModal = document.getElementById("confirm-modal");
+    confirmModal.style.display = "flex";
+
+    const confirmYes = document.getElementById("confirm-yes");
+    const confirmNo = document.getElementById("confirm-no");
+
+    // Si l'utilisateur confirme, on efface l'historique
+    confirmYes.onclick = () => {
+        localStorage.removeItem("transactionHistory"); // Supprime l'historique
+        document.getElementById("transaction-list").innerHTML = ""; // Vide la liste
+        confirmModal.style.display = "none"; // Ferme la modale
+        showToast("Historique effacé avec succès.");
+    };
+
+    // Si l'utilisateur annule, on ferme la modale
+    confirmNo.onclick = () => {
+        confirmModal.style.display = "none";
+    };
+}
+
+// Modification de `addTransactionToHistory` pour sauvegarder
+function addTransactionToHistory(telephone, montant) {
+    const entry = document.createElement("li");
+    entry.innerHTML = `<span>${telephone}</span><span>${montant} XOF</span>`;
+    history.appendChild(entry);
+    saveHistory(); // Sauvegarde après ajout
+}
+
+// Partage du QR Code
+function shareQRCode() {
+    const qrCodeCanvas = document.querySelector("#qrcode canvas");
+    if (qrCodeCanvas) {
+        qrCodeCanvas.toBlob((blob) => {
+            const file = new File([blob], "QRCode.png", { type: "image/png" });
+            if (navigator.share) {
+                navigator.share({
+                    files: [file],
+                    title: "QR Code",
+                    text: "Voici un QR Code généré pour un paiement.",
+                });
+            } else {
+                showToast("Le partage n'est pas supporté sur votre navigateur.", true);
+            }
+        });
+    } else {
+        showToast("Aucun QR Code à partager.", true);
+    }
+}
     </script>
 </body>
 </html>
