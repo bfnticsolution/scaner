@@ -3,7 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Paiement USSD</title>
+    <meta name="description" content="PCODE - Une application innovante pour générer et scanner des QR codes pour des transactions rapides et sécurisées. Simplifiez vos paiements USSD dès aujourd'hui.">
+    <meta name="keywords" content="PCODE, QR code, paiement USSD, transactions, paiement mobile, générateur QR code, scanner QR code">
+    <meta name="author" content="NTIC Solution">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="PCODE - Paiements simplifiés avec QR Codes">
+    <meta property="og:description" content="Découvrez PCODE, l'application de gestion de paiements USSD rapide, pratique et sécurisée. Générez et scannez des QR codes facilement.">
+    <meta property="og:image" content="https://www2.0zz0.com/2025/01/21/08/294968098.png">
+    <meta property="og:url" content="https://scanner.nticsolution.org">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PCODE - Paiements simplifiés avec QR Codes">
+    <meta name="twitter:description" content="Une solution rapide et sécurisée pour vos paiements USSD avec QR codes. Essayez PCODE dès maintenant !">
+    <meta name="twitter:image" content="https://www2.0zz0.com/2025/01/21/08/294968098.png">
+    <link rel="canonical" href="https://scanner.nticsolution.org">
+    <title>PCODE - Paiements Simplifiés avec QR Codes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Global Styles */
@@ -33,7 +47,7 @@
             padding: 20px 25px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             width: 90%;
-            max-width: 320px;
+            max-width: 300px;
             text-align: center;
             color: #333;
         }
@@ -70,7 +84,7 @@
             padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 1.3rem;
             cursor: pointer;
             text-align: left;
             display: flex;
@@ -82,8 +96,8 @@
             margin-left: 10px;
         }
         .select-selected img {
-            width: 20px;
-            height: 20px;
+            width: 30px;
+            height: 30px;
             margin-right: 10px;
         }
         .select-items {
@@ -100,7 +114,7 @@
 
         .select-items div {
             padding: 10px 15px;
-            font-size: 1rem;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             cursor: pointer;
@@ -108,8 +122,8 @@
         }
 
         .select-items div img {
-            width: 20px;
-            height: 20px;
+            width: 30px;
+            height: 30px;
             margin-right: 10px;
         }
 
@@ -131,7 +145,7 @@
         }
 
         button:hover {
-            background: linear-gradient(45deg, #0056b3, #007bff);
+            background: linear-gradient(45deg, #049c39, #089367);
         }
 
         #qrcode {
@@ -161,7 +175,7 @@
     padding: 15px;
     border-radius: 15px;
     width: 90%;
-    max-width: 320px;
+    max-width: 300px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     height: 100px; /* Hauteur fixe pour activer le scroll */
     overflow-y: auto; /* Active le défilement vertical */
@@ -191,7 +205,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: #050709(0, 0, 0, 0.7);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -208,7 +222,7 @@
 
         #modal-content h2 {
             margin: 0 0 20px;
-            color: #333;
+            color: #007bff;
         }
 
         #modal-content .close {
@@ -225,18 +239,55 @@
         #qrcode {
             margin: 20px 0;
         }
+        #logo {
+    width: 100px; /* Taille de l'image */
+    height: 100px; /* Assurez-vous que la hauteur et la largeur soient égales */
+    border-radius: 50%; /* Bordure arrondie */
+    border: 3px solid #007bff; /* Bordure autour de l'image */
+    margin-bottom: 10px; /* Espacement entre le logo et le titre */
+    box-shadow: 0 4px 18px #030202(0, 0, 0, 1.2); /* Effet d'ombre pour un rendu esthétique */
+}
+input {
+    width: 100%;
+    padding: 10px 15px;
+    padding-right: 35px; /* Ajoute un espace pour l'icône */
+    margin-top: 5px;
+    border: 5px solid #007bff;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    box-sizing: border-box;
+}
+
+.input-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px; /* Positionne l'icône à droite */
+    transform: translateY(-50%);
+    color: #007bff;
+    font-size: 1.2rem;
+    pointer-events: none; /* Empêche l'interaction avec l'icône */
+}
+
+
     </style>
 </head>
 <body>
-    <h1>Paycode USSD</h1>
-    
+    <header style="text-align: center; margin-top: 10px;">
+        <img src="https://www2.0zz0.com/2025/01/21/08/294968098.png" alt="Logo de PCode" id="logo" />
+    </header>
+
     <div class="container">
-        <label for="telephone">Numéro du receveur :</label>
-        <input type="number" id="telephone" placeholder="70123456" />
-
-        <label for="montant">Montant (XOF) à recevoir :</label>
-        <input type="number" id="montant" placeholder="Ex : 5000" />
-
+        <div style="position: relative; margin-bottom: 5px;">
+            <label for="telephone">Numéro du receveur :</label>
+            <input type="number" id="telephone" placeholder="70959953" />
+            <i class="fas fa-mobile-alt input-icon"></i>
+        </div>
+        
+        <div style="position: relative; margin-bottom: 5px;">
+            <label for="montant">Montant (XOF) à recevoir :</label>
+            <input type="number" id="montant" placeholder="Ex : 5000" />
+            <i class="fas fa-money-bill-wave input-icon"></i>
+        </div>
         <label>Opérateur :</label>
         <div class="custom-select">
             <div class="select-selected">
