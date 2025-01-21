@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner QR Code</title>
+    <title>Pcode</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,13 +36,25 @@
         button:hover {
             background: #007bff;
         }
+        #logo {
+    width: 100px; /* Taille de l'image */
+    height: 100px; /* Assurez-vous que la hauteur et la largeur soient égales */
+    border-radius: 50%; /* Bordure arrondie */
+    border: 3px solid #007bff; /* Bordure autour de l'image */
+    margin-bottom: 10px; /* Espacement entre le logo et le titre */
+    box-shadow: 0 4px 18px #030202(0, 0, 0, 1.2); /* Effet d'ombre pour un rendu esthétique */
+}
     </style>
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 <body>
-    <h1>Scanner un QR Code</h1>
-    <button id="startScan">Scanner QR Code</button>
+    <header style="text-align: center; margin-top: 10px;">
+        <img src="https://www2.0zz0.com/2025/01/21/08/294968098.png" alt="Logo de PCode" id="logo" />
+    </header>
+
+    <h1>Scanner Pcode</h1>
+    <button id="startScan">Scanner Maintenant</button>
     <video id="cameraFeed"></video>
 
     <!-- SweetAlert2 JS -->
